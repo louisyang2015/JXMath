@@ -1,0 +1,2 @@
+# JXMath
+math in C#
