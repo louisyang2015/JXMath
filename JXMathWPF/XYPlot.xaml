@@ -1,0 +1,92 @@
+﻿<Window x:Class="JXMathWPF.XYPlot"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JXMathWPF.Common"
+        mc:Ignorable="d"
+        Title="XYPlot" Height="450" Width="800" Loaded="Window_Loaded" 
+        SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" >
+
+    <Window.Resources>
+        <Style TargetType="ListBox">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Width" Value="50" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Name="Status_tb" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Main content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="4*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Stretch"
+              ShowsPreview="True"
+              Width="5"
+              />
+            
+            <!-- Left side graph controls -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- DataSets listbox -->
+                <TextBlock Text="Data Sets" FontSize="18" />
+                <ListBox Name="DataSets_lb" SelectionChanged="DataSets_lb_SelectionChanged"
+                         SelectionMode="Multiple" Grid.Row="1" >
+                    <ListBoxItem>Data Set 1</ListBoxItem>
+                    <ListBoxItem>Data Set 2</ListBoxItem>
+                    <ListBoxItem>Data Set 3</ListBoxItem>
+                </ListBox>
+
+                <!-- Zoom X, Zoom Y -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <TextBlock Text="Zoom X:" />
+                    <TextBox Name="ZoomX_tb" Text="1" KeyDown="Zoom_tb_KeyDown" />
+                </StackPanel>
+                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                    <TextBlock Text="Zoom Y:" />
+                    <TextBox Name="ZoomY_tb" Text="1" KeyDown="Zoom_tb_KeyDown" />
+                </StackPanel>
+            </Grid>
+            
+            <!-- Right side graph -->
+            <local:DrawingCanvas x:Name="XYGraph_canvas"  
+                                 MouseMove="XYGraph_canvas_MouseMove" 
+                                 MouseDown="XYGraph_canvas_MouseDown"
+                                 Margin="5" Grid.Column="2" />
+        </Grid>
+    </DockPanel>
+</Window>
