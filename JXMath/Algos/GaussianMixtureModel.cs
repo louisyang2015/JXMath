@@ -70,6 +70,8 @@ namespace JXMath.Algos
 
             for (int i = 0; i < MaxIterations; i++)
             {
+                BackupModel();
+
                 // Compute total probability
                 Refresh_TotalProbability(data);
 
@@ -82,20 +84,27 @@ namespace JXMath.Algos
                     Refresh_Model(data, k);
                 }
 
-                Likelihood = LogLikelihood(data);
-                Print($"Iteration {i + 1}: log likelihood = {Likelihood}");
+                Refresh_AB();
 
+                Likelihood = LogLikelihood(data);
+                
                 if (Likelihood < old_likelihood)
+                {
+                    Print("Log likelihood is decreasing. Rolling back to the old model.");
+                    Roll_Back_to_Old_Model();
                     break;
+                }
+
+                Print($"Iteration {i + 1}: log likelihood = {Likelihood}");
 
                 if (Abs((Likelihood - old_likelihood) / old_likelihood) < TerminationTolerance)
                     break;
 
                 // Prepare for next iteration
                 old_likelihood = Likelihood;
-                Refresh_AB();
             }
 
+            Refresh_AB();
             PrintParams();
         }
 
@@ -126,6 +135,9 @@ namespace JXMath.Algos
                 // Exit if the log likelihood is not improving
                 if (i > 0)
                 {
+                    if (best_candidate.LogLikelihood < Likelihood)
+                        break;
+
                     if (Abs((best_candidate.LogLikelihood - Likelihood) / Likelihood) < TerminationTolerance)
                         break;
                 }
@@ -146,6 +158,10 @@ namespace JXMath.Algos
                 if (candidates.Length == 0)
                     break;
             }
+
+            _A = new double[Mean.Length];
+            _B = new double[Mean.Length];
+            Refresh_AB();
         }
 
 
@@ -282,6 +298,49 @@ namespace JXMath.Algos
         #endregion
 
 
+        #region Rolling back to old model
+
+        class ModelBackup
+        {
+            public required double[] Mean;
+            public required double[] Variance;
+            public required double[] Weight;
+            public double Likelihood;
+        }
+
+        ModelBackup? _old_model = null;
+
+        /// <summary>
+        /// Store current parameters into "_old_model".
+        /// </summary>
+        void BackupModel()
+        {
+            _old_model = new ModelBackup()
+            {
+                Mean = (double[])Mean.Clone(),
+                Variance = (double[])Variance.Clone(),
+                Weight = (double[])Weight.Clone(),
+                Likelihood = Likelihood
+            };
+        }
+
+        /// <summary>
+        /// Copy parameters from "_old_model" to the current model.
+        /// </summary>
+        void Roll_Back_to_Old_Model()
+        {
+            if (_old_model != null)
+            {
+                Mean = (double[])_old_model.Mean.Clone();
+                Variance = (double[])_old_model.Variance.Clone();
+                Weight = (double[])_old_model.Weight.Clone();
+                Likelihood = _old_model.Likelihood;
+            }
+        }
+
+        #endregion
+
+
         #region High level search
 
         class Candidate
@@ -411,6 +470,70 @@ namespace JXMath.Algos
         }
 
         #endregion
+
+
+        /// <summary>
+        /// Return the most likely category. Only data within 3 sigma 
+        /// of the mean is categorized. Data outside returns a category
+        /// value of "null".
+        /// </summary>
+        public (int? category, double probability)[] Categorize(double[] data)
+        {
+            Refresh_AB();
+
+            // A three sigma range value
+            var three_sigma = new double[Mean.Length];
+            for (int k = 0; k < Mean.Length; k++)
+                three_sigma[k] = 3 * Sqrt(Variance[k]);
+
+            var results = new (int? category, double probability)[data.Length];
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                // Check that "data[i]" is within 3 sigma of the mean
+                bool in_range = false;
+                for (int k = 0; k < Mean.Length; k++)
+                {
+                    if (Abs(data[i] - Mean[k]) < three_sigma[k])
+                    {
+                        in_range = true;
+                        break;
+                    }
+                }
+
+                if (!in_range)
+                {
+                    // data[i] is NOT within 3 sigma of one of the means
+                    // Therefor the model does not hold true
+                    results[i] = (null, 0);
+                }
+                else
+                {
+                    // data[i] is within 3 sigma of one of the means
+                    double total_p = 0;
+
+                    int largest_k = 0; // category with largest probability
+                    double largest_p = -1;
+
+                    // Check all categories
+                    for (int k = 0; k < Mean.Length; k++)
+                    {
+                        double p = Weight[k] * Gaussian(data[i], k);
+                        if (p > largest_p)
+                        {
+                            largest_p = p;
+                            largest_k = k;
+                        }
+
+                        total_p += p;
+                    }
+
+                    results[i] = (largest_k, largest_p / total_p);
+                }
+            }
+
+            return results;
+        }
 
     }
 }
