@@ -6,12 +6,17 @@
         xmlns:local="clr-namespace:JXMathWPF.Common"
         mc:Ignorable="d"
         Title="XYPlot" Height="450" Width="800" Loaded="Window_Loaded" 
-        SizeChanged="Window_SizeChanged" KeyDown="Window_KeyDown" >
+        SizeChanged="Window_SizeChanged"
+        MouseWheel="Window_MouseWheel"
+        >
 
     <Window.Resources>
         <Style TargetType="ListBox">
             <Setter Property="FontSize" Value="14" />
             <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style TargetType="Menu">
+            <Setter Property="FontSize" Value="14" />
         </Style>
         <Style TargetType="TextBlock">
             <Setter Property="FontSize" Value="14" />
@@ -26,6 +31,18 @@
     </Window.Resources>
 
     <DockPanel>
+        <!-- Menu bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="X Scale">
+                <MenuItem Name="XNormal_menuItem" Header="Normal" IsChecked="True" Click="Scale_MenuItem_Click" />
+                <MenuItem Name="XLog10_menuItem" Header="Log10" Click="Scale_MenuItem_Click" />
+            </MenuItem>
+            <MenuItem Header="Y Scale">
+                <MenuItem Name="YNormal_menuItem" Header="Normal" IsChecked="True" Click="Scale_MenuItem_Click" />
+                <MenuItem Name="YLog10_menuItem" Header="Log10" Click="Scale_MenuItem_Click" />
+            </MenuItem>
+        </Menu>
+        
         <!-- Status bar -->
         <StatusBar DockPanel.Dock="Bottom">
             <StatusBarItem>
@@ -83,9 +100,13 @@
             </Grid>
             
             <!-- Right side graph -->
-            <local:DrawingCanvas x:Name="XYGraph_canvas"  
-                                 MouseMove="XYGraph_canvas_MouseMove" 
-                                 MouseDown="XYGraph_canvas_MouseDown"
+            <local:DrawingCanvas x:Name="XYGraph_canvas"
+                                 Background="Transparent"
+                                 Focusable="True"
+                                 IsEnabled="True"
+                                 KeyDown="XYGraph_canvas_KeyDown"
+                                 MouseMove="XYGraph_canvas_MouseMove"
+                                 MouseUp="XYGraph_canvas_MouseUp"                                 
                                  Margin="5" Grid.Column="2" />
         </Grid>
     </DockPanel>

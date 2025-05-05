@@ -10,21 +10,46 @@ namespace JXMathWPF.Common
 {
     class CircleVisual : DrawingVisual
     {
-        public string Name { get; private set; }
+        Point _center;
+        double _radius;
+        Brush _brush; // Original color of the circle at construction time
 
-        public CircleVisual(Point center, double radius, Color color, double dataX, double dataY)
+        public string Text { get; private set; }
+
+
+        public CircleVisual(Point center, double radius, Brush brush, double dataX, double dataY)
         {
-            Name = $"({dataX}, {dataY})";
+            _center = center;
+            _radius = radius;
+            _brush = brush;
 
-            using (DrawingContext dc = RenderOpen())
-            {
-                dc.DrawEllipse(new SolidColorBrush(color), null, center, radius, radius);
-            }
+            Text = $"({dataX:g6}, {dataY:g6})";
+
+            ResetColor();
         }
 
         public void Flag_As_Multiple_Points()
         {
-            Name += " ...";
+            if (!Text.EndsWith(" ..."))
+                Text += " ...";
+        }
+
+        /// <summary>
+        /// Draws the circle with the specified brush.
+        /// </summary>
+        public void ReColor(Brush brush)
+        {
+            using var dc = RenderOpen();
+            dc.DrawEllipse(brush, null, _center, _radius, _radius);
+        }
+
+        /// <summary>
+        /// Draws the circle with its original brush.
+        /// </summary>
+        public void ResetColor()
+        {
+            using var dc = RenderOpen();
+            dc.DrawEllipse(_brush, null, _center, _radius, _radius);
         }
     }
 

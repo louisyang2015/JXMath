@@ -60,7 +60,7 @@ namespace JXMath
         }
 
 
-        public RandomVariableSet Add_UniformRV(double likelihood, double low, double high)
+        public RandomVariableSet Add_UniformRV(double low, double high, double likelihood = 1.0)
         {
             _rv.Add(new UniformRV(low, high));
             _likelihood.Add(likelihood);
@@ -70,7 +70,7 @@ namespace JXMath
         }
 
 
-        public RandomVariableSet Add_NormalRV(double likelihood, double mean, double stddev)
+        public RandomVariableSet Add_NormalRV(double mean, double stddev, double likelihood = 1.0)
         {
             _rv.Add(new NormalRV(mean, stddev));
             _likelihood.Add(likelihood);
@@ -79,6 +79,10 @@ namespace JXMath
         }
 
 
+        /// <summary>
+        /// Refills the "_cdf" array, which decides which "_rv" (random variable)
+        /// to use when the Sample() method is called.
+        /// </summary>
         void RebuildCDF()
         {
             double total_prob = 0;

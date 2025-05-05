@@ -46,8 +46,7 @@ namespace WpfTestApp
             y = f.Eval(x);
             viewer.AddData(x, y, "y = x^3", "g");
 
-            viewer.ShowDialog();            
-
+            viewer.ShowDialog();
         }
     }
 }

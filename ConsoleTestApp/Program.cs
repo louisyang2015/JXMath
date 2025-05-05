@@ -8,8 +8,8 @@ using static JXMath.Globals;
 
 // Generate test data
 var rv = new RandomVariableSet();
-rv.Add_NormalRV(0.3, 1, 1);
-rv.Add_NormalRV(0.7, 4, 2);
+rv.Add_NormalRV(1, 1, likelihood: 0.3);
+rv.Add_NormalRV(4, 2, likelihood: 0.7);
 
 var data = rv.Sample(10000);
 
